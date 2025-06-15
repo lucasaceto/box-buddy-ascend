@@ -22,10 +22,10 @@ const menus = [
 
 export function AppSidebar() {
   return (
-    <Sidebar className="bg-gradient-to-b from-primary to-blue-900 text-white shadow-xl border-none min-w-[220px] font-sans">
+    <Sidebar className="shadow-xl border-none min-w-[220px] font-sans">
       <SidebarContent>
         <div className="py-8 flex flex-col items-center gap-4">
-          <div className="rounded-full bg-white/10 border border-primary w-16 h-16 flex items-center justify-center shadow hover:scale-105 transition-transform">
+          <div className="rounded-full bg-white/10 border-2 border-sidebar-accent w-16 h-16 flex items-center justify-center shadow hover:scale-105 transition-transform">
             <img
               src="https://cdn-icons-png.flaticon.com/512/684/684908.png"
               alt="Box Avatar"
@@ -35,7 +35,7 @@ export function AppSidebar() {
           <span className="text-lg font-bold tracking-tight mt-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.12)]">BoxFit Pro</span>
         </div>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs uppercase tracking-wide text-black mb-2 px-6 drop-shadow-[0_1px_3px_rgba(0,0,0,0.04)]">Menú</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-xs uppercase tracking-wide mb-2 px-6 drop-shadow-[0_1px_3px_rgba(0,0,0,0.04)]">Menú</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menus.map((item) => (
@@ -43,14 +43,14 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <a
                       href={item.url}
-                      className="flex items-center gap-3 px-6 py-2 rounded-lg text-base font-semibold text-black drop-shadow-[0_1.5px_2.5px_rgba(0,0,0,0.07)] hover:bg-white/10 hover:pl-8 transition-all duration-200 group"
+                      className="flex items-center gap-3 px-6 py-2 rounded-lg text-base font-semibold drop-shadow-[0_1.5px_2.5px_rgba(0,0,0,0.07)] hover:pl-8 transition-all duration-200 group"
                       tabIndex={0}
                     >
                       <item.icon
                         size={22}
-                        className="text-black group-hover:text-aqua-400 drop-shadow-[0_1.5px_2.5px_rgba(0,0,0,0.06)] transition-colors"
+                        className="drop-shadow-[0_1.5px_2.5px_rgba(0,0,0,0.06)] transition-colors"
                       />
-                      <span className="font-semibold text-black drop-shadow-[0_1.5px_2.5px_rgba(0,0,0,0.09)]">
+                      <span className="font-semibold drop-shadow-[0_1.5px_2.5px_rgba(0,0,0,0.09)]">
                         {item.title}
                       </span>
                     </a>
