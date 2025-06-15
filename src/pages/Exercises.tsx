@@ -8,9 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { Pencil, Trash2, Plus } from "lucide-react";
+import { Pencil, Trash2, Plus, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { useNavigate } from "react-router-dom";
 
 type Exercise = {
   id: string;
@@ -116,6 +117,7 @@ function EditExerciseForm({ exercise, onClose }: { exercise: Exercise; onClose: 
 
 export default function ExercisesPage() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [editing, setEditing] = useState<null | Exercise>(null);
   const [isCreateDialogOpen, setCreateDialogOpen] = useState(false);
@@ -146,7 +148,12 @@ export default function ExercisesPage() {
   return (
     <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Catálogo de Ejercicios</h1>
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+            <ArrowLeft />
+          </Button>
+          <h1 className="text-3xl font-bold tracking-tight">Catálogo de Ejercicios</h1>
+        </div>
         <Dialog open={isCreateDialogOpen} onOpenChange={setCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button><Plus className="mr-2" /> Crear Ejercicio</Button>
