@@ -1,4 +1,3 @@
-
 import {
   Sidebar,
   SidebarContent,
@@ -17,9 +16,9 @@ const menus = [
   { title: "Dashboard", url: "/", icon: Home },
   { title: "Entrenamientos", url: "/workouts", icon: ActivitySquare },
   { title: "Ejercicios", url: "/exercises", icon: Dumbbell },
-  { title: "Perfil", url: "#", icon: User },
-  { title: "Calendario", url: "#", icon: Calendar },
-  { title: "Configuración", url: "#", icon: Settings },
+  { title: "Perfil", url: "/profile", icon: User },
+  { title: "Calendario", url: "/calendar", icon: Calendar },
+  { title: "Configuración", url: "/settings", icon: Settings },
 ];
 
 export function AppSidebar() {

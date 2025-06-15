@@ -8,6 +8,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useMemo } from "react";
 import { startOfMonth, endOfMonth, subMonths, format, isSameMonth, isSameYear } from "date-fns";
 import { Link } from "react-router-dom";
+import { StatCards } from "@/components/dashboard/StatCards";
+import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
+import { WelcomePanel } from "@/components/dashboard/WelcomePanel";
 
 // Helpers para fechas (puedes mover a utils si crece el dashboard)
 const getMonthRange = (date: Date) => ({
@@ -176,7 +179,7 @@ export default function Index() {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen font-sans bg-gradient-to-br from-blue-50 to-blue-100">
+      <div className="flex min-h-screen font-sans bg-gradient-to-br from-blue-50 to-blue-100 w-full">
         <AppSidebar />
         <main className="flex-1 flex flex-col">
           {/* Barra superior */}
@@ -209,55 +212,11 @@ export default function Index() {
             </div>
           </header>
           {/* Paneles estadísticos principales */}
-          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-8 animate-fade-in">
-            {statCards.map((item) => (
-              <div
-                key={item.label}
-                className="bg-white shadow-lg rounded-xl p-6 flex flex-col items-start gap-3 ring-1 ring-blue-100 hover:scale-105 hover:shadow-xl transition-all duration-200 cursor-pointer"
-              >
-                <div>{item.icon}</div>
-                <div>
-                  <span className="block text-sm text-muted-foreground">{item.label}</span>
-                  <span className="block text-xl font-bold text-primary">{item.value}</span>
-                </div>
-                <span className="text-xs text-blue-600">{item.desc}</span>
-              </div>
-            ))}
-          </section>
+          <StatCards cards={statCards} />
           {/* Feed de actividad y panel de bienvenida */}
-          <div className="flex flex-col lg:flex-row gap-8 p-8 flex-1">
-            <section className="bg-white flex-1 shadow-lg rounded-xl p-6 overflow-auto animate-fade-in">
-              <h2 className="text-lg font-semibold mb-4 text-primary">Actividad Reciente</h2>
-              {activitiesLoading ? (
-                <div className="text-blue-400">Cargando actividad...</div>
-              ) : activities.length === 0 ? (
-                <div className="text-sm text-muted-foreground">Aún no se registran actividades.</div>
-              ) : (
-                <ul>
-                  {activities.map((item, i) => (
-                    <li key={i} className="flex items-center gap-3 py-2 border-b border-blue-50 last:border-b-0">
-                      <span className="font-bold text-blue-900">{item.title}</span>
-                      <span className="text-sm text-muted-foreground">{item.detail}</span>
-                      <span className="ml-auto text-xs text-blue-400">
-                        {item.date ? format(new Date(item.date), "dd MMM HH:mm") : ""}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-            <section className="bg-gradient-to-tr from-primary to-cyan-700/80 text-white shadow-lg rounded-xl p-8 w-full max-w-sm flex flex-col items-center justify-center animate-fade-in">
-              <h3 className="text-xl font-bold mb-4">¡Bienvenido al Box!</h3>
-              <p className="text-white/90 text-base mb-6 text-center">
-                Empieza a registrar tus avances.<br />Accede al catálogo de ejercicios y personaliza tus entrenamientos.
-              </p>
-              <Link
-                to="/workouts"
-                className="bg-white text-primary px-6 py-2 rounded-full font-bold shadow hover:scale-105 hover:bg-blue-100 transition-all"
-              >
-                Crear entrenamiento
-              </Link>
-            </section>
+          <div className="flex flex-col lg:flex-row gap-8 p-8 flex-1 min-w-0">
+            <ActivityFeed activities={activities} loading={activitiesLoading} />
+            <WelcomePanel />
           </div>
         </main>
       </div>

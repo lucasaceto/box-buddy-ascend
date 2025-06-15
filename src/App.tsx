@@ -9,6 +9,9 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import AuthPage from "./pages/Auth";
 import WorkoutsPage from "./pages/Workouts";
 import ExercisesPage from "./pages/Exercises";
+import Profile from "./pages/Profile";
+import CalendarPage from "./pages/Calendar";
+import SettingsPage from "./pages/Settings";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +55,30 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <ExercisesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/calendar"
+              element={
+                <ProtectedRoute>
+                  <CalendarPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <SettingsPage />
                 </ProtectedRoute>
               }
             />

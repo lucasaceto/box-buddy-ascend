@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
@@ -8,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { Pencil, Trash2, Plus } from "lucide-react";
+import { Pencil, Trash2, Plus, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 type Exercise = {
   id: string;
@@ -18,6 +18,7 @@ type Exercise = {
 };
 
 function NewExerciseForm({ onCreated }: { onCreated: () => void }) {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [name, setName] = useState("");
   const [type, setType] = useState("");
@@ -48,6 +49,15 @@ function NewExerciseForm({ onCreated }: { onCreated: () => void }) {
       onSubmit={e => { e.preventDefault(); createExercise.mutate(); }}
       className="flex flex-col gap-3 p-4 border rounded bg-muted/30 max-w-lg"
     >
+      <div className="flex gap-2 items-center">
+        <button
+          type="button"
+          onClick={() => navigate("/exercises")}
+          className="flex items-center gap-1 text-primary hover:underline font-medium mb-2"
+        >
+          <ArrowLeft size={20} /> Volver
+        </button>
+      </div>
       <Input value={name} onChange={e => setName(e.target.value)} placeholder="Nombre" required />
       <Input value={type} onChange={e => setType(e.target.value)} placeholder="Tipo (opcional: fuerza, cardio…)" />
       <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Descripción" />
@@ -57,6 +67,7 @@ function NewExerciseForm({ onCreated }: { onCreated: () => void }) {
 }
 
 function EditExerciseForm({ exercise, onClose }: { exercise: Exercise; onClose: () => void }) {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [name, setName] = useState(exercise.name);
   const [type, setType] = useState(exercise.type || "");
@@ -90,6 +101,15 @@ function EditExerciseForm({ exercise, onClose }: { exercise: Exercise; onClose: 
       onSubmit={e => { e.preventDefault(); updateMutation.mutate(); }}
       className="flex flex-col gap-3 p-4 border rounded bg-muted/30 max-w-lg"
     >
+      <div className="flex gap-2 items-center">
+        <button
+          type="button"
+          onClick={() => navigate("/exercises")}
+          className="flex items-center gap-1 text-primary hover:underline font-medium mb-2"
+        >
+          <ArrowLeft size={20} /> Volver
+        </button>
+      </div>
       <Input value={name} onChange={e => setName(e.target.value)} placeholder="Nombre" required />
       <Input value={type} onChange={e => setType(e.target.value)} placeholder="Tipo (opcional: fuerza, cardio…)" />
       <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Descripción" />
