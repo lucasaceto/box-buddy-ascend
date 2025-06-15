@@ -1,9 +1,11 @@
-
 // Página principal dashboard CrossFit
 
 import { AppSidebar } from "@/components/AppSidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Medal, Flame, Activity, BarChart2, Bell } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const statCards = [
   {
@@ -39,6 +41,8 @@ const feed = [
 ];
 
 const Index = () => {
+  const { user, logout } = useAuth();
+
   return (
     <SidebarProvider>
       <div className="flex min-h-screen font-sans bg-gradient-to-br from-blue-50 to-blue-100">
@@ -59,6 +63,15 @@ const Index = () => {
                   className="w-8 h-8 rounded-full ring-2 ring-primary"
                 />
                 <span className="font-semibold text-blue-900">Entrenador</span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="ml-2"
+                  title="Cerrar sesión"
+                  onClick={logout}
+                >
+                  <LogOut />
+                </Button>
               </div>
             </div>
           </header>
