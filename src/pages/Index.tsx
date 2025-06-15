@@ -1,4 +1,3 @@
-
 import { AppSidebar } from "@/components/AppSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Medal, Flame, Activity, BarChart2, Bell, LogOut } from "lucide-react";
@@ -8,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo } from "react";
 import { startOfMonth, endOfMonth, subMonths, format, isSameMonth, isSameYear } from "date-fns";
+import { Link } from "react-router-dom";
 
 // Helpers para fechas (puedes mover a utils si crece el dashboard)
 const getMonthRange = (date: Date) => ({
@@ -251,9 +251,12 @@ export default function Index() {
               <p className="text-white/90 text-base mb-6 text-center">
                 Empieza a registrar tus avances.<br />Accede al catálogo de ejercicios y personaliza tus entrenamientos.
               </p>
-              <button className="bg-white text-primary px-6 py-2 rounded-full font-bold shadow hover:scale-105 hover:bg-blue-100 transition-all">
+              <Link
+                to="/workouts"
+                className="bg-white text-primary px-6 py-2 rounded-full font-bold shadow hover:scale-105 hover:bg-blue-100 transition-all"
+              >
                 Crear entrenamiento
-              </button>
+              </Link>
             </section>
           </div>
         </main>
