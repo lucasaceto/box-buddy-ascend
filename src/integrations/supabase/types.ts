@@ -16,6 +16,7 @@ export type Database = {
           id: string
           name: string
           type: string | null
+          user_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -23,6 +24,7 @@ export type Database = {
           id?: string
           name: string
           type?: string | null
+          user_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -30,8 +32,17 @@ export type Database = {
           id?: string
           name?: string
           type?: string | null
+          user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "exercises_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       prs: {
         Row: {

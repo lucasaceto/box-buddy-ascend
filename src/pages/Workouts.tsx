@@ -1,14 +1,16 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { Pencil, Trash2, Plus, ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Pencil, Trash2, Plus } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 
 type Workout = {
   id: string;
@@ -16,19 +18,23 @@ type Workout = {
   description: string | null;
   date: string | null;
   duration_minutes: number | null;
+  user_id: string | null;
 };
 
-function NewWorkoutForm({ onCreated }: { onCreated: () => void }) {
-  const navigate = useNavigate();
+function NewWorkoutForm({ onCreated, onDone }: { onCreated: () => void; onDone: () => void }) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
   const [duration, setDuration] = useState<number | "">("");
+
   const createWorkout = useMutation({
     mutationFn: async () => {
+      if (!user) throw new Error("Debes iniciar sesión para crear un entrenamiento.");
       const { error } = await supabase.from("workouts").insert([
         {
+          user_id: user.id,
           name,
           description,
           date: date || null,
@@ -41,6 +47,7 @@ function NewWorkoutForm({ onCreated }: { onCreated: () => void }) {
       toast({ title: "Entrenamiento creado" });
       setName(""); setDescription(""); setDate(""); setDuration("");
       onCreated();
+      onDone();
     },
     onError: err => {
       toast({ title: "Error", description: (err as Error).message, variant: "destructive" });
@@ -50,28 +57,23 @@ function NewWorkoutForm({ onCreated }: { onCreated: () => void }) {
   return (
     <form
       onSubmit={e => { e.preventDefault(); createWorkout.mutate(); }}
-      className="flex flex-col gap-3 p-4 border rounded bg-muted/30 max-w-lg"
+      className="flex flex-col gap-4 pt-4"
     >
-      <div className="flex gap-2 items-center">
-        <button
-          type="button"
-          onClick={() => navigate("/workouts")}
-          className="flex items-center gap-1 text-primary hover:underline font-medium mb-2"
-        >
-          <ArrowLeft size={20} /> Volver
-        </button>
-      </div>
       <Input value={name} onChange={e => setName(e.target.value)} placeholder="Nombre" required />
       <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Descripción" />
       <Input type="date" value={date} onChange={e => setDate(e.target.value)} />
       <Input type="number" value={duration} onChange={e => setDuration(e.target.value === "" ? "" : Number(e.target.value))} placeholder="Duración (minutos)" min={0} />
-      <Button type="submit" disabled={createWorkout.isPending}>Agregar</Button>
+      <div className="flex justify-end gap-2">
+        <DialogClose asChild>
+          <Button type="button" variant="secondary">Cancelar</Button>
+        </DialogClose>
+        <Button type="submit" disabled={createWorkout.isPending}>Agregar</Button>
+      </div>
     </form>
   );
 }
 
 function EditWorkoutForm({ workout, onClose }: { workout: Workout; onClose: () => void }) {
-  const navigate = useNavigate();
   const { toast } = useToast();
   const [name, setName] = useState(workout.name);
   const [description, setDescription] = useState(workout.description || "");
@@ -105,24 +107,15 @@ function EditWorkoutForm({ workout, onClose }: { workout: Workout; onClose: () =
   return (
     <form
       onSubmit={e => { e.preventDefault(); updateMutation.mutate(); }}
-      className="flex flex-col gap-3 p-4 border rounded bg-muted/30 max-w-lg"
+      className="flex flex-col gap-4 pt-4"
     >
-      <div className="flex gap-2 items-center">
-        <button
-          type="button"
-          onClick={() => navigate("/workouts")}
-          className="flex items-center gap-1 text-primary hover:underline font-medium mb-2"
-        >
-          <ArrowLeft size={20} /> Volver
-        </button>
-      </div>
       <Input value={name} onChange={e => setName(e.target.value)} placeholder="Nombre" required />
       <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Descripción" />
       <Input type="date" value={date} onChange={e => setDate(e.target.value)} />
       <Input type="number" value={duration} onChange={e => setDuration(e.target.value === "" ? "" : Number(e.target.value))} placeholder="Duración (minutos)" min={0} />
-      <div className="flex gap-2">
-        <Button type="submit" disabled={updateMutation.isPending}>Guardar</Button>
+      <div className="flex justify-end gap-2">
         <Button type="button" variant="secondary" onClick={onClose}>Cancelar</Button>
+        <Button type="submit" disabled={updateMutation.isPending}>Guardar</Button>
       </div>
     </form>
   );
@@ -131,6 +124,7 @@ function EditWorkoutForm({ workout, onClose }: { workout: Workout; onClose: () =
 export default function WorkoutsPage() {
   const { toast } = useToast();
   const [editing, setEditing] = useState<null | Workout>(null);
+  const [isCreateDialogOpen, setCreateDialogOpen] = useState(false);
   const queryClient = useQueryClient();
   const query = useQuery({
     queryKey: ["workouts"],
@@ -159,63 +153,79 @@ export default function WorkoutsPage() {
   });
 
   return (
-    <div className="max-w-3xl mx-auto py-8">
+    <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold tracking-tight">Mis Entrenamientos</h1>
+        <Dialog open={isCreateDialogOpen} onOpenChange={setCreateDialogOpen}>
+          <DialogTrigger asChild>
+            <Button><Plus className="mr-2" /> Crear Entrenamiento</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Nuevo Entrenamiento</DialogTitle>
+            </DialogHeader>
+            <NewWorkoutForm
+              onCreated={() => queryClient.invalidateQueries({ queryKey: ["workouts"] })}
+              onDone={() => setCreateDialogOpen(false)}
+            />
+          </DialogContent>
+        </Dialog>
+      </div>
+
       <Card>
-        <CardHeader>
-          <CardTitle>Mis Entrenamientos</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <NewWorkoutForm onCreated={() => queryClient.invalidateQueries({ queryKey: ["workouts"] })} />
-          <div className="mt-6">
-            {query.isLoading ? (
-              <div>Cargando entrenamientos...</div>
-            ) : query.isError ? (
-              <div className="text-destructive">Error: {(query.error as Error).message}</div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nombre</TableHead>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Duración</TableHead>
-                    <TableHead>Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {query.data && query.data.length > 0 ? (
-                    query.data.map((w) => (
-                      <TableRow key={w.id}>
-                        <TableCell>{w.name}</TableCell>
-                        <TableCell>{w.date ? new Date(w.date).toLocaleDateString() : "-"}</TableCell>
-                        <TableCell>{w.duration_minutes ? `${w.duration_minutes} min` : "-"}</TableCell>
-                        <TableCell>
-                          <Button size="sm" variant="ghost" onClick={() => setEditing(w)}>
-                            <Pencil className="text-muted-foreground" />
-                          </Button>
-                          <Button size="sm" variant="ghost" onClick={() => deleteMutation.mutate(w.id)}>
-                            <Trash2 className="text-destructive" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={4} className="text-center text-muted-foreground">
-                        No hay entrenamientos registrados.
+        <CardContent className="pt-6">
+          {query.isLoading ? (
+            <div>Cargando entrenamientos...</div>
+          ) : query.isError ? (
+            <div className="text-destructive">Error: {(query.error as Error).message}</div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>Fecha</TableHead>
+                  <TableHead>Duración</TableHead>
+                  <TableHead className="text-right">Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {query.data && query.data.length > 0 ? (
+                  query.data.map((w) => (
+                    <TableRow key={w.id}>
+                      <TableCell>{w.name}</TableCell>
+                      <TableCell>{w.date ? new Date(w.date + "T00:00:00").toLocaleDateString() : "-"}</TableCell>
+                      <TableCell>{w.duration_minutes ? `${w.duration_minutes} min` : "-"}</TableCell>
+                      <TableCell className="text-right">
+                        <Button size="sm" variant="ghost" onClick={() => setEditing(w)}>
+                          <Pencil className="text-muted-foreground" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => deleteMutation.mutate(w.id)}>
+                          <Trash2 className="text-destructive" />
+                        </Button>
                       </TableCell>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            )}
-          </div>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center text-muted-foreground">
+                      No hay entrenamientos registrados.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
-      {editing && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
-          <EditWorkoutForm workout={editing} onClose={() => setEditing(null)} />
-        </div>
-      )}
+      
+      <Dialog open={!!editing} onOpenChange={(isOpen) => !isOpen && setEditing(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Entrenamiento</DialogTitle>
+          </DialogHeader>
+          {editing && <EditWorkoutForm workout={editing} onClose={() => setEditing(null)} />}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
