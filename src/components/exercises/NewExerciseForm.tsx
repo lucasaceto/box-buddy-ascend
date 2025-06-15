@@ -24,15 +24,20 @@ export default function NewExerciseForm({ onCreated, onDone }: NewExerciseFormPr
   const createExercise = useMutation({
     mutationFn: async () => {
       if (!user?.id) throw new Error("Debes iniciar sesión para crear un ejercicio.");
+      // Log para depuración
+      console.log("[NuevoEjercicio] user.id que se envía:", user.id);
+
       const { error } = await supabase.from("exercises").insert([
         {
-          user_id: user.id,
+          user_id: user.id, // <-- Aseguramos que SIEMPRE se envía user_id
           name,
           type: type || null,
           description,
         }
       ]);
-      if (error) throw new Error(error.message);
+      if (error) {
+        throw new Error(error.message);
+      }
     },
     onSuccess: () => {
       toast({ title: "Ejercicio creado" });
@@ -45,22 +50,42 @@ export default function NewExerciseForm({ onCreated, onDone }: NewExerciseFormPr
     }
   });
 
+  const isFormDisabled = createExercise.isPending || loading || !user?.id;
+
   return (
     <form
-      onSubmit={e => { e.preventDefault(); if (!user?.id) return; createExercise.mutate(); }}
+      onSubmit={e => { e.preventDefault(); if (user?.id) { createExercise.mutate(); } }}
       className="flex flex-col gap-4 pt-4"
     >
-      <Input value={name} onChange={e => setName(e.target.value)} placeholder="Nombre" required disabled={createExercise.isPending || loading || !user?.id} />
-      <Input value={type} onChange={e => setType(e.target.value)} placeholder="Tipo (opcional: fuerza, cardio…)" disabled={createExercise.isPending || loading || !user?.id} />
-      <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Descripción" disabled={createExercise.isPending || loading || !user?.id} />
+      <Input
+        value={name}
+        onChange={e => setName(e.target.value)}
+        placeholder="Nombre"
+        required
+        disabled={isFormDisabled}
+      />
+      <Input
+        value={type}
+        onChange={e => setType(e.target.value)}
+        placeholder="Tipo (opcional: fuerza, cardio…)"
+        disabled={isFormDisabled}
+      />
+      <Textarea
+        value={description}
+        onChange={e => setDescription(e.target.value)}
+        placeholder="Descripción"
+        disabled={isFormDisabled}
+      />
       <div className="flex justify-end gap-2">
         <DialogClose asChild>
           <Button type="button" variant="secondary" disabled={createExercise.isPending}>Cancelar</Button>
         </DialogClose>
-        <Button type="submit" disabled={createExercise.isPending || loading || !user?.id}>Agregar</Button>
+        <Button type="submit" disabled={isFormDisabled}>Agregar</Button>
       </div>
       {!user?.id && (
-        <div className="text-destructive text-xs pt-2">Inicia sesión antes de crear un ejercicio.</div>
+        <div className="text-destructive text-xs pt-2">
+          Inicia sesión antes de crear un ejercicio.
+        </div>
       )}
     </form>
   );
