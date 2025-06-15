@@ -1,10 +1,8 @@
 
-// Fortalecimiento del listener de sesión, loading y uso de supabase.auth correctamente ordenado
-
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 interface AuthContextProps {
   user: User | null;
@@ -22,20 +20,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     // ORDEN CORRECTO: Primero el listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
+      console.log("[AuthContext] Auth event:", event, "Current path:", location.pathname);
       setSession(newSession);
       setUser(newSession?.user ?? null);
-      // SÓLO redirige si realmente no hay sesión y event es SIGNED_OUT
-      if (event === "SIGNED_OUT") navigate("/auth");
-      if ((event === "SIGNED_IN" || event === "USER_UPDATED") && newSession?.user) {
-        // Redirigir solo si es necesario, o a donde estaba si es posible
-        if (window.location.pathname === "/auth") {
-          navigate("/", { replace: true });
-        }
+      
+      // Solo redirigir en casos específicos, no en todas las actualizaciones de sesión
+      if (event === "SIGNED_OUT") {
+        navigate("/auth");
+      } else if (event === "SIGNED_IN" && location.pathname === "/auth") {
+        // Solo redirigir si estamos en la página de auth tras iniciar sesión
+        navigate("/", { replace: true });
       }
+      // NO redirigir en TOKEN_REFRESHED, USER_UPDATED u otros eventos
     });
 
     // Luego la recuperación de sesión inicial
@@ -46,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, location.pathname]);
 
   async function login(email: string, password: string) {
     setLoading(true);
@@ -87,4 +88,3 @@ export function useAuth() {
   if (!ctx) throw new Error("useAuth must be used within AuthProvider");
   return ctx;
 }
-

@@ -1,3 +1,4 @@
+
 import { AppSidebar } from "@/components/AppSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Medal, Flame, Activity, BarChart2, Bell, LogOut } from "lucide-react";
@@ -57,11 +58,12 @@ export default function Index() {
     queryKey: ["activities_feed", user?.id],
     queryFn: async () => {
       if (!user) return [];
-      // Actividades: PRs recientes, Workouts completados, nuevos entrenamientos creados
-      const [prsRes, userWorkoutsRes, workoutsRes] = await Promise.all([
+      // Actividades: PRs recientes, Workouts completados, nuevos entrenamientos creados, ejercicios creados
+      const [prsRes, userWorkoutsRes, workoutsRes, exercisesRes] = await Promise.all([
         supabase.from("prs").select("id, value, unit, date_achieved, notes, exercise_id").eq("user_id", user.id).order("date_achieved", { ascending: false }).limit(3),
         supabase.from("user_workouts").select("id, date_completed, performance_score, notes, workout_id").eq("user_id", user.id).order("date_completed", { ascending: false }).limit(3),
         supabase.from("workouts").select("id, name, description, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(3),
+        supabase.from("exercises").select("id, name, description, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(3),
       ]);
       let feed: any[] = [];
       if (prsRes.data) {
@@ -94,6 +96,17 @@ export default function Index() {
             detail: w.name,
             date: w.created_at,
             time: w.created_at,
+          }))
+        );
+      }
+      if (exercisesRes.data) {
+        feed = feed.concat(
+          exercisesRes.data.map((ex) => ({
+            type: "created_exercise",
+            title: "Ejercicio creado",
+            detail: ex.name + (ex.description ? ` - ${ex.description.slice(0, 50)}${ex.description.length > 50 ? '...' : ''}` : ""),
+            date: ex.created_at,
+            time: ex.created_at,
           }))
         );
       }

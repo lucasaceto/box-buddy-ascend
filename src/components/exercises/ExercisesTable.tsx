@@ -27,6 +27,7 @@ export default function ExercisesTable({ exercises, onEdit, onDelete, loadingDel
         <TableRow>
           <TableHead>Nombre</TableHead>
           <TableHead>Tipo</TableHead>
+          <TableHead>Descripción</TableHead>
           <TableHead className="text-right">Acciones</TableHead>
         </TableRow>
       </TableHeader>
@@ -34,8 +35,11 @@ export default function ExercisesTable({ exercises, onEdit, onDelete, loadingDel
         {exercises && exercises.length > 0 ? (
           exercises.map((ex) => (
             <TableRow key={ex.id}>
-              <TableCell>{ex.name}</TableCell>
+              <TableCell className="font-medium">{ex.name}</TableCell>
               <TableCell>{ex.type || "-"}</TableCell>
+              <TableCell className="max-w-xs truncate" title={ex.description || ""}>
+                {ex.description || "-"}
+              </TableCell>
               <TableCell className="text-right">
                 {ex.user_id === user?.id ? (
                   <>
@@ -54,7 +58,7 @@ export default function ExercisesTable({ exercises, onEdit, onDelete, loadingDel
           ))
         ) : (
           <TableRow>
-            <TableCell colSpan={3} className="text-center text-muted-foreground">
+            <TableCell colSpan={4} className="text-center text-muted-foreground">
               No hay ejercicios registrados.
             </TableCell>
           </TableRow>

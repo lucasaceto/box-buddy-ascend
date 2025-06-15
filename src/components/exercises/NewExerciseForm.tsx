@@ -20,6 +20,7 @@ export default function NewExerciseForm({ onCreated, onDone }: NewExerciseFormPr
   const [type, setType] = useState("");
   const [description, setDescription] = useState("");
   const { user, loading } = useAuth();
+  const queryClient = useQueryClient();
 
   const createExercise = useMutation({
     mutationFn: async () => {
@@ -44,6 +45,8 @@ export default function NewExerciseForm({ onCreated, onDone }: NewExerciseFormPr
       setName(""); setType(""); setDescription("");
       onCreated();
       onDone();
+      // Invalidar las queries del dashboard para actualizar la actividad reciente
+      queryClient.invalidateQueries({ queryKey: ["activities_feed"] });
     },
     onError: err => {
       toast({ title: "Error", description: (err as Error).message, variant: "destructive" });
