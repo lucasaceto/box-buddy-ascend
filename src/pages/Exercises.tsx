@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
@@ -26,11 +25,13 @@ function NewExerciseForm({ onCreated, onDone }: { onCreated: () => void; onDone:
   const [name, setName] = useState("");
   const [type, setType] = useState("");
   const [description, setDescription] = useState("");
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
   const createExercise = useMutation({
     mutationFn: async () => {
-      if (!user) throw new Error("Debes iniciar sesión para crear un ejercicio.");
+      // Protección extra: solo intentar crear si hay user
+      if (!user?.id) throw new Error("Debes iniciar sesión para crear un ejercicio.");
+      // Enviar SIEMPRE el user_id obtenido de useAuth (protegido contra null)
       const { error } = await supabase.from("exercises").insert([
         {
           user_id: user.id,
@@ -54,18 +55,21 @@ function NewExerciseForm({ onCreated, onDone }: { onCreated: () => void; onDone:
 
   return (
     <form
-      onSubmit={e => { e.preventDefault(); createExercise.mutate(); }}
+      onSubmit={e => { e.preventDefault(); if (!user?.id) return; createExercise.mutate(); }}
       className="flex flex-col gap-4 pt-4"
     >
-      <Input value={name} onChange={e => setName(e.target.value)} placeholder="Nombre" required />
-      <Input value={type} onChange={e => setType(e.target.value)} placeholder="Tipo (opcional: fuerza, cardio…)" />
-      <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Descripción" />
+      <Input value={name} onChange={e => setName(e.target.value)} placeholder="Nombre" required disabled={createExercise.isPending || loading || !user?.id} />
+      <Input value={type} onChange={e => setType(e.target.value)} placeholder="Tipo (opcional: fuerza, cardio…)" disabled={createExercise.isPending || loading || !user?.id} />
+      <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Descripción" disabled={createExercise.isPending || loading || !user?.id} />
       <div className="flex justify-end gap-2">
         <DialogClose asChild>
-          <Button type="button" variant="secondary">Cancelar</Button>
+          <Button type="button" variant="secondary" disabled={createExercise.isPending}>Cancelar</Button>
         </DialogClose>
-        <Button type="submit" disabled={createExercise.isPending}>Agregar</Button>
+        <Button type="submit" disabled={createExercise.isPending || loading || !user?.id}>Agregar</Button>
       </div>
+      {!user?.id && (
+        <div className="text-destructive text-xs pt-2">Inicia sesión antes de crear un ejercicio.</div>
+      )}
     </form>
   );
 }

@@ -1,4 +1,6 @@
 
+// Fortalecimiento del listener de sesión, loading y uso de supabase.auth correctamente ordenado
+
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
@@ -22,18 +24,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Escuchar cambios de autenticación antes de obtener la sesión actual
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-
-      // Redirección según el evento de autenticación
+    // ORDEN CORRECTO: Primero el listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
+      setSession(newSession);
+      setUser(newSession?.user ?? null);
+      // SÓLO redirige si realmente no hay sesión y event es SIGNED_OUT
       if (event === "SIGNED_OUT") navigate("/auth");
-      if (event === "SIGNED_IN" || event === "USER_UPDATED") navigate("/");
+      if ((event === "SIGNED_IN" || event === "USER_UPDATED") && newSession?.user) {
+        // Redirigir solo si es necesario, o a donde estaba si es posible
+        if (window.location.pathname === "/auth") {
+          navigate("/", { replace: true });
+        }
+      }
     });
 
-    // Obtener sesión actual (si existe) después de setear el listener
+    // Luego la recuperación de sesión inicial
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -82,3 +87,4 @@ export function useAuth() {
   if (!ctx) throw new Error("useAuth must be used within AuthProvider");
   return ctx;
 }
+
