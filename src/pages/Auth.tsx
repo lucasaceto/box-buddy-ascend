@@ -1,8 +1,9 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useSearchParams, useNavigate } from "react-router-dom";
 
 export default function AuthPage() {
   const [view, setView] = useState<"login" | "signup">("login");
@@ -13,6 +14,22 @@ export default function AuthPage() {
   const [pending, setPending] = useState(false);
 
   const { login, signup, loading } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  // Nueva lógica: determinar si mostrar mensaje de confirmación tras registro exitoso
+  const [showConfirmation, setShowConfirmation] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("registered") === "1") {
+      setShowConfirmation(true);
+      // Limpiar el query param después de mostrar el mensaje
+      setSearchParams((params) => {
+        params.delete("registered");
+        return params;
+      }, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -28,6 +45,12 @@ export default function AuthPage() {
         return;
       }
       const { error } = await signup(email, password, username);
+      setPending(false);
+      if (!error) {
+        // Redirigir a la página de login con la bandera de éxito
+        navigate("/auth?registered=1", { replace: true });
+        return;
+      }
       if (error) setError(error);
     }
     setPending(false);
@@ -42,6 +65,12 @@ export default function AuthPage() {
         <h2 className="text-2xl font-bold text-center mb-2">
           {view === "login" ? "Iniciar sesión" : "Crear cuenta"}
         </h2>
+
+        {showConfirmation && (
+          <div className="bg-green-100 text-green-800 py-2 px-4 rounded mb-4 text-sm text-center font-semibold">
+            ¡Registro exitoso! Por favor, confirma tu email para poder iniciar sesión.
+          </div>
+        )}
 
         {error && (
           <div className="bg-red-100 text-red-800 py-2 px-4 rounded mb-4 text-sm text-center">
@@ -102,3 +131,4 @@ export default function AuthPage() {
     </div>
   );
 }
+
