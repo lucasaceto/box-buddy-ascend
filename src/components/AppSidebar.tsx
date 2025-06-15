@@ -35,7 +35,7 @@ export function AppSidebar() {
           <span className="text-lg font-bold tracking-tight mt-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.12)]">BoxFit Pro</span>
         </div>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs uppercase tracking-wide text-white/80 mb-2 px-6 drop-shadow-[0_1px_3px_rgba(0,0,0,0.14)]">Menú</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-xs uppercase tracking-wide text-black mb-2 px-6 drop-shadow-[0_1px_3px_rgba(0,0,0,0.04)]">Menú</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menus.map((item) => (
@@ -43,14 +43,14 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <a
                       href={item.url}
-                      className="flex items-center gap-3 px-6 py-2 rounded-lg text-base font-semibold text-white drop-shadow-[0_1.5px_2.5px_rgba(0,0,0,0.16)] hover:bg-white/10 hover:pl-8 transition-all duration-200 group"
+                      className="flex items-center gap-3 px-6 py-2 rounded-lg text-base font-semibold text-black drop-shadow-[0_1.5px_2.5px_rgba(0,0,0,0.07)] hover:bg-white/10 hover:pl-8 transition-all duration-200 group"
                       tabIndex={0}
                     >
                       <item.icon
                         size={22}
-                        className="text-white group-hover:text-aqua-400 drop-shadow-[0_1.5px_2.5px_rgba(0,0,0,0.18)] transition-colors"
+                        className="text-black group-hover:text-aqua-400 drop-shadow-[0_1.5px_2.5px_rgba(0,0,0,0.06)] transition-colors"
                       />
-                      <span className="font-semibold text-white drop-shadow-[0_1.5px_2.5px_rgba(0,0,0,0.18)]">
+                      <span className="font-semibold text-black drop-shadow-[0_1.5px_2.5px_rgba(0,0,0,0.09)]">
                         {item.title}
                       </span>
                     </a>
