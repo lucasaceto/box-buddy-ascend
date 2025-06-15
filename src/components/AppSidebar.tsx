@@ -1,4 +1,3 @@
-
 import {
   Sidebar,
   SidebarContent,
@@ -21,6 +20,15 @@ const menus = [
 ];
 
 export function AppSidebar() {
+  // Insert/update for proper hrefs
+  const updatedMenus = [
+    { title: "Dashboard", url: "/", icon: Home },
+    { title: "Entrenamientos", url: "/workouts", icon: ActivitySquare },
+    { title: "Ejercicios", url: "/exercises", icon: Dumbbell },
+    { title: "Perfil", url: "#", icon: User },
+    { title: "Calendario", url: "#", icon: Calendar },
+    { title: "Configuración", url: "#", icon: Settings },
+  ];
   return (
     <Sidebar className="shadow-xl border-none min-w-[220px] font-sans">
       <SidebarContent>
@@ -38,19 +46,19 @@ export function AppSidebar() {
           <SidebarGroupLabel className="text-xs uppercase tracking-wide mb-2 px-6 drop-shadow-[0_1px_3px_rgba(0,0,0,0.04)]">Menú</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menus.map((item) => (
+              {updatedMenus.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <a
                       href={item.url}
-                      className="flex items-center gap-3 px-6 py-2 rounded-lg text-base font-semibold drop-shadow-[0_1.5px_2.5px_rgba(0,0,0,0.07)] hover:pl-8 transition-all duration-200 group"
+                      className="flex items-center gap-3 px-6 py-2 rounded-lg text-base font-semibold text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground transition-all duration-200 group"
                       tabIndex={0}
                     >
                       <item.icon
                         size={22}
-                        className="drop-shadow-[0_1.5px_2.5px_rgba(0,0,0,0.06)] transition-colors"
+                        className="transition-colors"
                       />
-                      <span className="font-semibold drop-shadow-[0_1.5px_2.5px_rgba(0,0,0,0.09)]">
+                      <span className="font-semibold">
                         {item.title}
                       </span>
                     </a>

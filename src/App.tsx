@@ -7,6 +7,8 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "@/contexts/AuthContext";
 import AuthPage from "./pages/Auth";
+import WorkoutsPage from "./pages/Workouts";
+import ExercisesPage from "./pages/Exercises";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +36,22 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Index />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/workouts"
+              element={
+                <ProtectedRoute>
+                  <WorkoutsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/exercises"
+              element={
+                <ProtectedRoute>
+                  <ExercisesPage />
                 </ProtectedRoute>
               }
             />
