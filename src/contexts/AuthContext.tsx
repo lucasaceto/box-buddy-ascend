@@ -22,18 +22,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Escucha cambios de autenticación antes de leer la sesión
+    // Escuchar cambios de autenticación antes de obtener la sesión actual
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
 
-      // Redireccionar basado en autenticación
+      // Redirección según el evento de autenticación
       if (event === "SIGNED_OUT") navigate("/auth");
       if (event === "SIGNED_IN" || event === "USER_UPDATED") navigate("/");
     });
 
-    // Leer sesión del storage después de establecer listener
+    // Obtener sesión actual (si existe) después de setear el listener
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -43,7 +43,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  // Login
   async function login(email: string, password: string) {
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -51,7 +50,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error?.message ?? null };
   }
 
-  // Sign up con email, contraseña y username (se guarda username como metadata)
   async function signup(email: string, password: string, username: string) {
     setLoading(true);
     const { error } = await supabase.auth.signUp({

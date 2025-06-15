@@ -62,7 +62,9 @@ const Index = () => {
                   alt="Avatar"
                   className="w-8 h-8 rounded-full ring-2 ring-primary"
                 />
-                <span className="font-semibold text-blue-900">Entrenador</span>
+                <span className="font-semibold text-blue-900">
+                  {user?.user_metadata?.username ? user.user_metadata.username : "Entrenador"}
+                </span>
                 <Button
                   variant="ghost"
                   size="icon"
