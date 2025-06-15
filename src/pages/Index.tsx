@@ -1,47 +1,178 @@
-// Página principal dashboard CrossFit
 
 import { AppSidebar } from "@/components/AppSidebar";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { Medal, Flame, Activity, BarChart2, Bell } from "lucide-react";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { Medal, Flame, Activity, BarChart2, Bell, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useMemo } from "react";
+import { startOfMonth, endOfMonth, subMonths, format, isSameMonth, isSameYear } from "date-fns";
 
-const statCards = [
-  {
-    label: "WOD de hoy",
-    value: "21-15-9 Fran",
-    icon: <Flame size={32} className="text-orange-400" />,
-    desc: "Tiempo récord: 3:05",
-  },
-  {
-    label: "PRs Registrados",
-    value: "16",
-    icon: <Medal size={32} className="text-lime-400" />,
-    desc: "Último: Back Squat 120kg",
-  },
-  {
-    label: "Sesiones este mes",
-    value: "12",
-    icon: <Activity size={32} className="text-blue-400" />,
-    desc: "Promedio: 35 min/entreno",
-  },
-  {
-    label: "Progreso % Mes",
-    value: "+8%",
-    icon: <BarChart2 size={32} className="text-cyan-400" />,
-    desc: "Mejoría vs. mes anterior",
-  },
-];
+// Helpers para fechas (puedes mover a utils si crece el dashboard)
+const getMonthRange = (date: Date) => ({
+  start: startOfMonth(date),
+  end: endOfMonth(date),
+});
 
-const feed = [
-  { user: "Ana", action: "Registró PR", detail: "Deadlift 105kg", time: "hace 17min" },
-  { user: "Carlos", action: "Completó WOD", detail: "Murph RX", time: "hace 35min" },
-  { user: "Laura", action: "Nuevo entrenamiento creado", detail: "EMOM 18'", time: "hace 1h" },
-];
-
-const Index = () => {
+export default function Index() {
   const { user, logout } = useAuth();
+
+  // Consultar datos dinamicos relevantes para los stats
+  const { data: workouts = [], isLoading: workoutsLoading } = useQuery({
+    queryKey: ['workouts', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from("workouts")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("date", { ascending: false });
+      if (error) throw new Error(error.message);
+      return data ?? [];
+    },
+    enabled: !!user,
+  });
+
+  const { data: prs = [], isLoading: prsLoading } = useQuery({
+    queryKey: ['prs', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from("prs")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("date_achieved", { ascending: false });
+      if (error) throw new Error(error.message);
+      return data ?? [];
+    },
+    enabled: !!user,
+  });
+
+  // Feed de actividad: fetch últimos eventos relevantes para ese usuario
+  const { data: activities = [], isLoading: activitiesLoading } = useQuery({
+    queryKey: ["activities_feed", user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      // Actividades: PRs recientes, Workouts completados, nuevos entrenamientos creados
+      const [prsRes, userWorkoutsRes, workoutsRes] = await Promise.all([
+        supabase.from("prs").select("id, value, unit, date_achieved, notes, exercise_id").eq("user_id", user.id).order("date_achieved", { ascending: false }).limit(3),
+        supabase.from("user_workouts").select("id, date_completed, performance_score, notes, workout_id").eq("user_id", user.id).order("date_completed", { ascending: false }).limit(3),
+        supabase.from("workouts").select("id, name, description, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(3),
+      ]);
+      let feed: any[] = [];
+      if (prsRes.data) {
+        feed = feed.concat(
+          prsRes.data.map((pr) => ({
+            type: "pr",
+            title: "Nuevo PR",
+            detail: `${pr.value}${pr.unit ? ' ' + pr.unit : ""} (${pr.notes || "Sin notas"})`,
+            date: pr.date_achieved || null,
+            time: pr.date_achieved,
+          }))
+        );
+      }
+      if (userWorkoutsRes.data) {
+        feed = feed.concat(
+          userWorkoutsRes.data.map((uw) => ({
+            type: "workout",
+            title: "WOD completado",
+            detail: `${uw.performance_score ? uw.performance_score + ' pts · ' : ""}${uw.notes || ""}`,
+            date: uw.date_completed,
+            time: uw.date_completed,
+          }))
+        );
+      }
+      if (workoutsRes.data) {
+        feed = feed.concat(
+          workoutsRes.data.map((w) => ({
+            type: "created_workout",
+            title: "Entrenamiento creado",
+            detail: w.name,
+            date: w.created_at,
+            time: w.created_at,
+          }))
+        );
+      }
+      // Ordenar por fecha descendente y limitar a 6 eventos
+      feed.sort((a, b) => new Date(b.date || b.time).getTime() - new Date(a.date || a.time).getTime());
+      return feed.slice(0, 6);
+    },
+    enabled: !!user,
+  });
+
+  // Stats calculados
+  const todayWod = useMemo(() => workouts[0] || null, [workouts]);
+  const totalPrs = prs.length;
+  const latestPr = prs[0];
+  const now = new Date();
+  const thisMonth = getMonthRange(now);
+  const lastMonth = getMonthRange(subMonths(now, 1));
+  // Sesiones este mes
+  const sessionsThisMonth = workouts.filter(w =>
+    w.date &&
+    isSameMonth(new Date(w.date), now) &&
+    isSameYear(new Date(w.date), now)
+  );
+  // Sesiones mes pasado
+  const sessionsLastMonth = workouts.filter(w =>
+    w.date &&
+    isSameMonth(new Date(w.date), lastMonth.start) &&
+    isSameYear(new Date(w.date), lastMonth.start)
+  );
+  // Progreso %
+  const progreso =
+    sessionsLastMonth.length === 0
+      ? sessionsThisMonth.length > 0 ? 100 : 0
+      : Math.round(
+          ((sessionsThisMonth.length - sessionsLastMonth.length) /
+            sessionsLastMonth.length) *
+            100
+        );
+
+  // Cards dinámicos
+  const statCards = [
+    {
+      label: "WOD de hoy",
+      value: todayWod ? todayWod.name : "Sin entreno",
+      icon: <Flame size={32} className="text-orange-400" />,
+      desc: todayWod
+        ? todayWod.description?.slice(0, 60) || "¡Dale fuerte hoy!"
+        : "No hay WOD programado",
+    },
+    {
+      label: "PRs Registrados",
+      value: String(totalPrs),
+      icon: <Medal size={32} className="text-lime-400" />,
+      desc: latestPr
+        ? `Último: ${latestPr.value ?? "-"}${latestPr.unit ? ' ' + latestPr.unit : ""}`
+        : "Sin PRs aún",
+    },
+    {
+      label: "Sesiones este mes",
+      value: String(sessionsThisMonth.length),
+      icon: <Activity size={32} className="text-blue-400" />,
+      desc: `Promedio: ${
+        sessionsThisMonth.length > 0
+          ? Math.round(
+              (sessionsThisMonth.reduce((a, b) => a + (b.duration_minutes || 0), 0) || 0) /
+                sessionsThisMonth.length
+            )
+          : 0
+      } min/entreno`,
+    },
+    {
+      label: "Progreso % Mes",
+      value: `${progreso > 0 ? "+" : ""}${progreso}%`,
+      icon: <BarChart2 size={32} className="text-cyan-400" />,
+      desc:
+        progreso > 0
+          ? `Mejoría vs. mes anterior`
+          : progreso < 0
+          ? "Menos sesiones que el mes pasado"
+          : "Sin cambios vs. mes anterior",
+    },
+  ];
 
   return (
     <SidebarProvider>
@@ -97,27 +228,36 @@ const Index = () => {
           <div className="flex flex-col lg:flex-row gap-8 p-8 flex-1">
             <section className="bg-white flex-1 shadow-lg rounded-xl p-6 overflow-auto animate-fade-in">
               <h2 className="text-lg font-semibold mb-4 text-primary">Actividad Reciente</h2>
-              <ul>
-                {feed.map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 py-2 border-b border-blue-50 last:border-b-0">
-                    <span className="font-bold text-blue-900">{item.user}</span>
-                    <span className="text-sm text-muted-foreground">{item.action}</span>
-                    <span className="font-medium text-primary">{item.detail}</span>
-                    <span className="ml-auto text-xs text-blue-400">{item.time}</span>
-                  </li>
-                ))}
-              </ul>
+              {activitiesLoading ? (
+                <div className="text-blue-400">Cargando actividad...</div>
+              ) : activities.length === 0 ? (
+                <div className="text-sm text-muted-foreground">Aún no se registran actividades.</div>
+              ) : (
+                <ul>
+                  {activities.map((item, i) => (
+                    <li key={i} className="flex items-center gap-3 py-2 border-b border-blue-50 last:border-b-0">
+                      <span className="font-bold text-blue-900">{item.title}</span>
+                      <span className="text-sm text-muted-foreground">{item.detail}</span>
+                      <span className="ml-auto text-xs text-blue-400">
+                        {item.date ? format(new Date(item.date), "dd MMM HH:mm") : ""}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </section>
             <section className="bg-gradient-to-tr from-primary to-cyan-700/80 text-white shadow-lg rounded-xl p-8 w-full max-w-sm flex flex-col items-center justify-center animate-fade-in">
               <h3 className="text-xl font-bold mb-4">¡Bienvenido al Box!</h3>
-              <p className="text-white/90 text-base mb-6 text-center">Empieza a registrar tus avances.<br/> Accede al catálogo de ejercicios y personaliza tus entrenamientos.</p>
-              <button className="bg-white text-primary px-6 py-2 rounded-full font-bold shadow hover:scale-105 hover:bg-blue-100 transition-all">Crear entrenamiento</button>
+              <p className="text-white/90 text-base mb-6 text-center">
+                Empieza a registrar tus avances.<br />Accede al catálogo de ejercicios y personaliza tus entrenamientos.
+              </p>
+              <button className="bg-white text-primary px-6 py-2 rounded-full font-bold shadow hover:scale-105 hover:bg-blue-100 transition-all">
+                Crear entrenamiento
+              </button>
             </section>
           </div>
         </main>
       </div>
     </SidebarProvider>
   );
-};
-
-export default Index;
+}
