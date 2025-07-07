@@ -12,6 +12,7 @@ import { Link } from "react-router-dom";
 import { StatCards } from "@/components/dashboard/StatCards";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { WelcomePanel } from "@/components/dashboard/WelcomePanel";
+import { PRsOverview } from "@/components/dashboard/PRsOverview";
 
 // Helpers para fechas (puedes mover a utils si crece el dashboard)
 const getMonthRange = (date: Date) => ({
@@ -227,9 +228,14 @@ export default function Index() {
           {/* Paneles estadísticos principales */}
           <StatCards cards={statCards} />
           {/* Feed de actividad y panel de bienvenida */}
-          <div className="flex flex-col lg:flex-row gap-8 p-8 flex-1 min-w-0">
-            <ActivityFeed activities={activities} loading={activitiesLoading} />
-            <WelcomePanel />
+          <div className="flex flex-col xl:flex-row gap-8 p-8 flex-1 min-w-0">
+            <div className="flex-1 space-y-8">
+              <ActivityFeed activities={activities} loading={activitiesLoading} />
+            </div>
+            <div className="xl:w-96 space-y-8">
+              <WelcomePanel />
+              <PRsOverview />
+            </div>
           </div>
         </main>
       </div>

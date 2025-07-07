@@ -12,6 +12,7 @@ import ExercisesPage from "./pages/Exercises";
 import Profile from "./pages/Profile";
 import CalendarPage from "./pages/Calendar";
 import SettingsPage from "./pages/Settings";
+import PRsPage from "./pages/PRs";
 
 const queryClient = new QueryClient();
 
@@ -79,6 +80,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <SettingsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/prs"
+              element={
+                <ProtectedRoute>
+                  <PRsPage />
                 </ProtectedRoute>
               }
             />
