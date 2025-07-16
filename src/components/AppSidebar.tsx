@@ -8,12 +8,13 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Dumbbell, Settings, User, Home, Calendar, ActivitySquare, Trophy } from "lucide-react";
+import { Dumbbell, Settings, User, Home, Calendar, ActivitySquare, Trophy, Plus } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 // Usamos useLocation para resaltar el menú seleccionado, opcional para UX visual
 const menus = [
   { title: "Dashboard", url: "/", icon: Home },
+  { title: "Registrar WOD", url: "/log-wod", icon: Plus },
   { title: "Entrenamientos", url: "/workouts", icon: ActivitySquare },
   { title: "Ejercicios", url: "/exercises", icon: Dumbbell },
   { title: "PRs", url: "/prs", icon: Trophy },
