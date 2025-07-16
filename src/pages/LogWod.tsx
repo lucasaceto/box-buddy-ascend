@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, ArrowLeft } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -139,9 +139,20 @@ export default function LogWod() {
 
   return (
     <div className="container mx-auto p-6 max-w-2xl">
+      <div className="flex items-center gap-4 mb-6">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate(-1)}
+          className="shrink-0"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+        <h1 className="text-2xl font-bold">Registrar WOD</h1>
+      </div>
       <Card>
         <CardHeader>
-          <CardTitle>Registrar WOD</CardTitle>
+          <CardTitle>Detalles del WOD</CardTitle>
           <CardDescription>
             Registra tu Workout of the Day y mantén un seguimiento de tu progreso.
           </CardDescription>
