@@ -203,7 +203,6 @@ export default function LogWod() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">Ninguno</SelectItem>
                         {workouts?.map((workout) => (
                           <SelectItem key={workout.id} value={workout.id}>
                             {workout.name}
