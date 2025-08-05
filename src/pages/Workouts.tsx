@@ -138,6 +138,7 @@ export default function WorkoutsPage() {
       setSearchParams({});
     }
   }, [searchParams, setSearchParams]);
+  
   const query = useQuery({
     queryKey: ["workouts"],
     queryFn: async () => {
@@ -164,6 +165,11 @@ export default function WorkoutsPage() {
     }
   });
 
+  const handleBackClick = () => {
+    console.log("Back button clicked");
+    navigate(-1);
+  };
+
   return (
     <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between mb-8">
@@ -171,11 +177,8 @@ export default function WorkoutsPage() {
           <Button 
             variant="ghost" 
             size="icon" 
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              navigate(-1);
-            }}
+            onClick={handleBackClick}
+            type="button"
           >
             <ArrowLeft />
           </Button>
