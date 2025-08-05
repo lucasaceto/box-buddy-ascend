@@ -28,6 +28,10 @@ export default function ExercisesPage() {
   const [isCreateDialogOpen, setCreateDialogOpen] = useState(false);
   const queryClient = useQueryClient();
 
+  const handleBackClick = () => {
+    navigate(-1);
+  };
+
   const query = useQuery({
     queryKey: ["exercises"],
     queryFn: async () => {
@@ -55,7 +59,12 @@ export default function ExercisesPage() {
     <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={handleBackClick}
+            type="button"
+          >
             <ArrowLeft />
           </Button>
           <h1 className="text-3xl font-bold tracking-tight">Catálogo de Ejercicios</h1>

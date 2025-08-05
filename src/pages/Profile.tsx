@@ -5,10 +5,20 @@ import { ArrowLeft } from "lucide-react";
 
 export default function Profile() {
   const navigate = useNavigate();
+  
+  const handleBackClick = () => {
+    navigate(-1);
+  };
+
   return (
     <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
       <div className="flex items-center gap-4 mb-8">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={handleBackClick}
+          type="button"
+        >
           <ArrowLeft />
         </Button>
         <h1 className="text-3xl font-bold tracking-tight">Perfil</h1>
