@@ -29,14 +29,14 @@ export function AppSidebar() {
     <Sidebar className="shadow-xl border-none min-w-[220px] font-sans">
       <SidebarContent>
         <div className="py-8 flex flex-col items-center gap-4">
-          <div className="rounded-full bg-white/10 border-2 border-sidebar-accent w-16 h-16 flex items-center justify-center shadow hover:scale-105 transition-transform">
+          <Link to="/" className="rounded-full bg-white/10 border-2 border-sidebar-accent w-16 h-16 flex items-center justify-center shadow hover:scale-105 transition-transform cursor-pointer">
             <img
               src="https://cdn-icons-png.flaticon.com/512/684/684908.png"
               alt="Box Avatar"
               className="w-12 h-12"
             />
-          </div>
-          <span className="text-lg font-bold tracking-tight mt-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.12)]">BoxFit Pro</span>
+          </Link>
+          <Link to="/" className="text-lg font-bold tracking-tight mt-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.12)] hover:opacity-80 transition-opacity">BoxFit Pro</Link>
         </div>
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs uppercase tracking-wide mb-2 px-6 drop-shadow-[0_1px_3px_rgba(0,0,0,0.04)]">Menú</SidebarGroupLabel>

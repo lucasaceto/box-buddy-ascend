@@ -9,7 +9,7 @@ export function WelcomePanel() {
         Empieza a registrar tus avances.<br />Accede al catálogo de ejercicios y personaliza tus entrenamientos.
       </p>
       <Link
-        to="/workouts"
+        to="/workouts?create=true"
         className="bg-white text-primary px-6 py-2 rounded-full font-bold shadow hover:scale-105 hover:bg-blue-100 transition-all"
       >
         Crear entrenamiento

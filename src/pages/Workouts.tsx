@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Pencil, Trash2, Plus, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 type Workout = {
   id: string;
@@ -125,9 +125,19 @@ function EditWorkoutForm({ workout, onClose }: { workout: Workout; onClose: () =
 export default function WorkoutsPage() {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [editing, setEditing] = useState<null | Workout>(null);
   const [isCreateDialogOpen, setCreateDialogOpen] = useState(false);
   const queryClient = useQueryClient();
+
+  // Abrir automáticamente el dialog de creación si viene del dashboard
+  useEffect(() => {
+    if (searchParams.get('create') === 'true') {
+      setCreateDialogOpen(true);
+      // Limpiar el parámetro de la URL
+      setSearchParams({});
+    }
+  }, [searchParams, setSearchParams]);
   const query = useQuery({
     queryKey: ["workouts"],
     queryFn: async () => {
