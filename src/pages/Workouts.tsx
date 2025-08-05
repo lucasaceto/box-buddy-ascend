@@ -167,7 +167,7 @@ export default function WorkoutsPage() {
 
   const handleBackClick = () => {
     console.log("Back button clicked");
-    navigate(-1);
+    navigate('/');
   };
 
   return (
